@@ -42,8 +42,10 @@ module Kafka
   #     end
   #
   class Consumer
+    
+    attr_reader :offset_manager
 
-    def initialize(cluster:, logger:, instrumenter:, group:, offset_manager:, session_timeout:, heartbeat:)
+    def initialize(cluster:, logger:, instrumenter:, group:, offset_manager:, session_timeout:, heartbeat:, autocommit: true)
       @cluster = cluster
       @logger = logger
       @instrumenter = instrumenter
@@ -51,6 +53,7 @@ module Kafka
       @offset_manager = offset_manager
       @session_timeout = session_timeout
       @heartbeat = heartbeat
+      @autocommit = autocommit
 
       # Whether or not the consumer is currently consuming messages.
       @running = false
@@ -136,7 +139,7 @@ module Kafka
               end
             end
 
-            mark_message_as_processed(message)
+            mark_message_as_processed(message) if @autocommit
             @offset_manager.commit_offsets_if_necessary
 
             @heartbeat.send_if_necessary
@@ -197,7 +200,7 @@ module Kafka
               end
             end
 
-            mark_message_as_processed(batch.messages.last)
+            mark_message_as_processed(batch.messages.last) if @autocommit
           end
 
           @offset_manager.commit_offsets_if_necessary
