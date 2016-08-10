@@ -20,8 +20,14 @@ module Kafka
     end
 
     def mark_as_processed(topic, partition, offset)
-      @uncommitted_offsets += 1
       @processed_offsets[topic] ||= {}
+      prev_offset = @processed_offsets[topic][partition]
+      if prev_offset.nil?
+        new_offset_count = 1
+      else
+        new_offset_count = offset - prev_offset
+      end
+      @uncommitted_offsets += new_offset_count
 
       # The committed offset should always be the offset of the next message that the
       # application will read, thus adding one to the last message processed
