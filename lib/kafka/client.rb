@@ -217,7 +217,7 @@ module Kafka
     # @param heartbeat_interval [Integer] the interval between heartbeats; must be less
     #   than the session window.
     # @return [Consumer]
-    def consumer(group_id:, session_timeout: 30, offset_commit_interval: 10, offset_commit_threshold: 0, heartbeat_interval: 10)
+    def consumer(group_id:, session_timeout: 30, offset_commit_interval: 10, offset_commit_threshold: 0, heartbeat_interval: 10, autocommit: true)
       cluster = initialize_cluster
 
       instrumenter = DecoratingInstrumenter.new(@instrumenter, {
@@ -252,6 +252,7 @@ module Kafka
         offset_manager: offset_manager,
         session_timeout: session_timeout,
         heartbeat: heartbeat,
+        autocommit: autocommit,
       )
     end
 
