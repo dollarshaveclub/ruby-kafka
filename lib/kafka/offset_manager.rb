@@ -8,6 +8,8 @@ module Kafka
       @commit_threshold = commit_threshold
 
       @uncommitted_offsets = 0
+      @received_offsets = {}
+      @fetched_offsets = {}
       @processed_offsets = {}
       @default_offsets = {}
       @committed_offsets = nil
@@ -17,6 +19,14 @@ module Kafka
 
     def set_default_offset(topic, default_offset)
       @default_offsets[topic] = default_offset
+    end
+
+    def mark_as_fetched(topic, partition, offset)
+      @fetched_offsets[topic] ||= {}
+      new_offset = offset + 1
+      return if new_offset <= @fetched_offsets[topic].fetch(partition, -1)
+      @fetched_offsets[topic][partition] = new_offset
+      @logger.debug "Marking #{topic}/#{partition}:#{offset} as fetched"
     end
 
     def mark_as_processed(topic, partition, offset)
@@ -41,7 +51,7 @@ module Kafka
     end
 
     def next_offset_for(topic, partition)
-      offset = @processed_offsets.fetch(topic, {}).fetch(partition) {
+      offset = @fetched_offsets.fetch(topic, {}).fetch(partition) {
         committed_offset_for(topic, partition)
       }
 

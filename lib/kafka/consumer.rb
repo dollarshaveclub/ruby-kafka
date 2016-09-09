@@ -201,6 +201,7 @@ module Kafka
               end
             end
 
+            mark_message_as_fetched(message)
             mark_message_as_processed(message) if @autocommit
             @offset_manager.commit_offsets_if_necessary
 
@@ -262,6 +263,7 @@ module Kafka
               end
             end
 
+            mark_message_as_fetched(batch.messages.last)
             mark_message_as_processed(batch.messages.last) if @autocommit
           end
 
@@ -363,6 +365,10 @@ module Kafka
 
     def mark_message_as_processed(message)
       @offset_manager.mark_as_processed(message.topic, message.partition, message.offset)
+    end
+
+    def mark_message_as_fetched(message)
+      @offset_manager.mark_as_fetched(message.topic, message.partition, message.offset)
     end
   end
 end
