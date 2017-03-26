@@ -1,5 +1,5 @@
 begin
-  require "statsd"
+  require "datadog/statsd"
 rescue LoadError
   $stderr.puts "In order to report Kafka client metrics to Datadog you need to install the `dogstatsd-ruby` gem."
   raise
